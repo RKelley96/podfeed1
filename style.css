@@ -1,0 +1,330 @@
+/* Main background and text - Darker theme with gradient */
+.stApp {
+    background: linear-gradient(135deg, #0A0A0A 0%, #121212 100%);
+    color: #FFFFFF;
+}
+
+/* Headers */
+h1 {
+    color: #FFFFFF;
+    font-family: 'Arial', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 2.5rem; /* Slightly smaller */
+    margin-bottom: 1rem;
+    text-align: center; /* Center main title */
+    animation: fadeIn 1s ease-in-out; /* Add a subtle fade-in animation */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+h2, h3 {
+    color: #FFFFFF;
+    font-family: 'Arial', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem; /* Added bottom margin */
+}
+
+/* Section Headers (like Define Personalities, Choose Topic) */
+h1 + div > .stContainer > h2, /* Target headers in containers directly after title */
+div[data-testid="stVerticalBlock"] > .stContainer > h2 { /* More general targeting */
+     border-bottom: 2px solid #FF1493; /* Pink underline for section headers */
+     padding-bottom: 0.5rem;
+     margin-bottom: 1rem;
+}
+
+
+/* Sidebar - Even darker shade */
+section[data-testid="stSidebar"] {
+    background-color: #0A0A0A;
+    border-right: 1px solid #222222;
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: #FFFFFF;
+}
+
+/* Buttons - Primary pink with hover effect */
+.stButton>button {
+    background-color: #FF1493;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Add transform transition */
+}
+
+.stButton>button:hover {
+    background-color: #FF69B4;
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+/* Specific styling for the main Generate button */
+button[kind="primary"] {
+     font-size: 1.2rem; /* Make generate button bigger */
+     padding: 15px 30px;
+}
+
+
+/* Script display container */
+.podcast-script-container {
+    background-color: #0A0A0A;
+    padding: 25px;
+    border-radius: 6px;
+    border-left: 3px solid #4CAF50;
+    white-space: pre-wrap;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+    color: #FFFFFF;
+}
+
+/* Individual dialogue lines within the script container */
+.dialogue-line {
+    margin-bottom: 15px;
+}
+
+/* --- NEW: Dynamic Speaker Styling --- */
+/* Base style for speaker names */
+.speaker-1, .speaker-2 {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+/* Style for the first detected speaker */
+.speaker-1 {
+    color: #64B5F6; /* Light Blue */
+}
+/* Style for the second detected speaker */
+.speaker-2 {
+    color: #FFB74D; /* Orange */
+}
+/* --- End Dynamic Speaker Styling --- */
+
+
+/* Dialogue text */
+.dialogue-text {
+    color: #CCCCCC; /* Style the actual dialogue */
+    padding-left: 20px; /* Indent dialogue */
+}
+
+/* Other lines in script (e.g., intro/outro if not speaker lines) */
+.script-other-line {
+     margin-bottom: 10px;
+     color: #FFFFFF; /* Ensure other lines are white */
+     font-style: italic; /* Italicize non-dialogue lines */
+     color: #AAAAAA; /* Make them slightly dimmer */
+}
+
+/* Empty lines for spacing */
+.script-empty-line {
+    height: 10px;
+}
+
+
+/* Audio player */
+audio {
+    width: 100%;
+    border-radius: 6px;
+    margin-top: 20px;
+    background-color: #1E1E1E;
+}
+
+/* Input fields */
+.stTextInput input, .stTextArea textarea {
+    background-color: #0A0A0A;
+    border: 1px solid #333333;
+    color: white;
+    border-radius: 4px;
+}
+/* Style file uploader */
+.stFileUploader > div > div > button {
+     border: 1px dashed #444444;
+     background-color: #0A0A0A;
+     color: #888888;
+}
+.stFileUploader > div > div > button:hover {
+     border-color: #FF1493;
+     color: #FF1493;
+     background-color: #0A0A0A;
+}
+
+/* Style the file uploader container */
+.stFileUploader > div {
+     background-color: #0A0A0A;
+     border: 1px solid #222222;
+     border-radius: 4px;
+     padding: 10px;
+}
+
+/* Style the file uploader text */
+.stFileUploader > div > div > div {
+     color: #888888;
+}
+
+/* Fix for placeholder text color */
+.stTextInput input::placeholder, .stTextArea textarea::placeholder {
+    color: #AAAAAA;
+}
+
+/* Text content */
+p {
+    font-size: 1rem; /* Adjusted size */
+    line-height: 1.6;
+    color: #FFFFFF; /* Ensure paragraphs are white */
+}
+
+/* Links - Use a different accent color maybe? */
+a {
+    color: #64B5F6; /* Light blue links */
+}
+
+/* Download buttons - Subtle style */
+.stDownloadButton button {
+    background-color: #333333; /* Darker gray */
+    border: 1px solid #555555;
+    color: white;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.stDownloadButton button:hover {
+    background-color: #444444;
+    border-color: #777777;
+}
+
+
+/* Large emphasized text (Removed - less relevant now) */
+/* .big-callout { ... } */
+
+/* Fixes for radio button text and widget labels */
+/* These might need adjustment based on Streamlit versions */
+div.row-widget.stRadio > div[role="radiogroup"] > label,
+div.row-widget.stRadio > div > label > div:nth-child(2),
+.stRadio > div:first-child,
+.stWidgetLabel, .stWidgetLabel p, .stWidgetLabel span,
+.st-bq, .st-br, .st-bs, .st-bt, /* Internal classes */
+[data-testid="stRadio"] label div {
+    color: #FFFFFF !important; /* Use !important sparingly if needed for overrides */
+}
+
+
+/* Target all possible text elements in the UI */
+.stMarkdown, .stCheckbox, .stRadio, .stSelectbox, .stSlider, .stTextInput, .stTextArea, .stFileUploader {
+    color: #FFFFFF;
+}
+
+/* General text color override (use with caution) */
+/* div, span, label {
+    color: #FFFFFF;
+} */
+
+/* Episode title styling */
+.episode-title {
+    background-color: #0A0A0A;
+    padding: 15px;
+    border-left: 5px solid #FF1493;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid #222222;
+}
+
+/* Ensure h2 within episode title is white */
+.episode-title h2 {
+    margin: 0;
+    color: #FF1493; /* Changed to pink to stand out */
+    text-align: center;
+    text-transform: none;
+    font-size: 2rem; /* Larger font size */
+    font-weight: 800; /* Bolder font */
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3); /* Add shadow for emphasis */
+    margin-bottom: 1rem;
+}
+
+/* Ensure caption text is readable */
+.stCaption {
+    color: #AAAAAA; /* Lighter gray for captions */
+    text-align: center; /* Center footer caption */
+}
+
+/* Container styling */
+div[data-testid="stVerticalBlock"] > .stContainer {
+    background-color: #0A0A0A;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #222222;
+}
+
+.stTextInput input, .stTextArea textarea {
+    caret-color: #FF1493 !important; /* Pink blinking cursor */
+}
+
+/* Episode Artwork */
+.episode-artwork {
+    max-width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+    margin: 20px auto;
+    border: 2px solid #4CAF50;
+    background-color: #0A0A0A;
+    padding: 10px;
+}
+
+/* Artwork download button */
+button[kind="secondary"] {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 10px 0;
+}
+
+button[kind="secondary"]:hover {
+    background-color: #45a049;
+}
+
+.episode-description {
+    background-color: rgba(10, 10, 10, 0.8);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #FFFFFF;
+    border-left: 4px solid #FF1493;
+    border: 1px solid #222222;
+}
+
+/* Subheading styles */
+.subheading {
+    text-align: center;
+    margin: -1rem 0 2rem 0;
+    font-size: 1.2rem;
+    color: #FF1493;
+    letter-spacing: 1px;
+    width: 100%;
+    display: block;
+}
+
+/* Ensure the subheading container is properly centered */
+.subheading-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: -1rem 0 2rem 0;
+}
