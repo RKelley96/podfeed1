@@ -7,3 +7,4 @@ pydub==0.25.1
 elevenlabs>=0.2.0
 beautifulsoup4>=4.9.3
 python-magic>=0.4.27 
+youtube-transcript-api>=0.6.1 

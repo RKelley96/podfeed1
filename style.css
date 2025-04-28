@@ -54,21 +54,25 @@ section[data-testid="stSidebar"] h3 {
 }
 
 /* Buttons - Primary pink with hover effect */
-.stButton>button {
-    background-color: #FF1493;
-    color: white;
+.stButton>button,
+button[kind="primary"],
+button[kind="secondary"] {
+    background-color: #FF1493 !important;
+    color: #FFFFFF !important;
     border: none;
     border-radius: 4px;
     padding: 12px 24px;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Add transform transition */
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
-
-.stButton>button:hover {
-    background-color: #FF69B4;
-    transform: scale(1.05); /* Slightly enlarge on hover */
+.stButton>button:hover,
+button[kind="primary"]:hover,
+button[kind="secondary"]:hover {
+    background-color: #FF69B4 !important;
+    color: #FFFFFF !important;
+    transform: scale(1.05);
 }
 
 /* Specific styling for the main Generate button */
@@ -83,7 +87,6 @@ button[kind="primary"] {
     background-color: #0A0A0A;
     padding: 25px;
     border-radius: 6px;
-    border-left: 3px solid #4CAF50;
     white-space: pre-wrap;
     margin-bottom: 30px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.5);
@@ -105,11 +108,11 @@ button[kind="primary"] {
 }
 /* Style for the first detected speaker */
 .speaker-1 {
-    color: #64B5F6; /* Light Blue */
+    color: #FF1493 !important; /* Pink */
 }
 /* Style for the second detected speaker */
 .speaker-2 {
-    color: #FFB74D; /* Orange */
+    color: #64B5F6 !important; /* Blue */
 }
 /* --- End Dynamic Speaker Styling --- */
 
@@ -309,22 +312,113 @@ button[kind="secondary"]:hover {
     border: 1px solid #222222;
 }
 
-/* Subheading styles */
-.subheading {
-    text-align: center;
-    margin: -1rem 0 2rem 0;
-    font-size: 1.2rem;
-    color: #FF1493;
-    letter-spacing: 1px;
-    width: 100%;
-    display: block;
+.stTextArea textarea {
+    color: #FFFFFF !important;
 }
 
-/* Ensure the subheading container is properly centered */
-.subheading-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: -1rem 0 2rem 0;
+.stSelectbox div[data-baseweb="select"] input,
+.stSelectbox div[data-baseweb="select"] span,
+.stSelectbox .css-1wa3eu0-placeholder,
+.stSelectbox .css-1uccc91-single,
+.stSelectbox .css-1okebmr-indicatorSeparator,
+.stSelectbox .css-1pahdxg-control,
+.stSelectbox .css-1n7v3ny-option {
+    color: #000000 !important;
+    background: #FFFFFF !important;
+}
+
+/* Fix selectbox dropdown options for latest Streamlit: black text on white background */
+.stSelectbox [role='option'],
+.stSelectbox .css-1n7v3ny-option,
+.stSelectbox .css-1dimb5e-option,
+.stSelectbox .css-1uccc91-single,
+.stSelectbox .css-1wa3eu0-placeholder,
+.stSelectbox .css-1okebmr-indicatorSeparator,
+.stSelectbox .css-1pahdxg-control,
+.stSelectbox .css-1dimb5e-menu {
+    color: #000 !important;
+    background: #fff !important;
+}
+.stSelectbox [role='option'][aria-selected="true"],
+.stSelectbox .css-1n7v3ny-option[aria-selected="true"],
+.stSelectbox .css-1dimb5e-option[aria-selected="true"] {
+    color: #fff !important;
+    background: #FF1493 !important;
+}
+
+/* Force all selectbox dropdown options to have black text, even if disabled or selected */
+.stSelectbox [role="option"] {
+    color: #000 !important;
+    opacity: 1 !important;
+}
+.stSelectbox [role="option"][aria-disabled="true"] {
+    color: #888 !important;
+    opacity: 0.7 !important;
+}
+.stSelectbox [role="option"][aria-selected="true"] {
+    color: #fff !important;
+    background: #FF1493 !important;
+    opacity: 1 !important;
+}
+
+/* --- Pink underline for active Streamlit tabs --- */
+[data-testid="stTabs"] [data-testid="stTab"]:after {
+    content: '';
+    display: block;
+    height: 4px;
+    background: #FF1493;
+    border-radius: 2px 2px 0 0;
+    margin-top: 4px;
+    transition: background 0.3s;
+}
+[data-testid="stTabs"] [data-testid="stTab"][aria-selected="true"]:after {
+    background: #FF1493;
+}
+
+/* --- Pink radio selector circles --- */
+/* For Streamlit 1.20+ (MUI radio) */
+/* -.stRadio [role="radiogroup"] > label > div:first-child {
+-    border: 2px solid #FF1493 !important;
+-    box-shadow: 0 0 0 2px #FF149322;
+-    background: #181818;
+-}
+-.stRadio [role="radiogroup"] > label > div:first-child[aria-checked="true"],
+-.stRadio [role="radiogroup"] > label > div:first-child:has(input:checked) {
+-    background: #FF1493 !important;
+-    border-color: #FF1493 !important;
+-}
+-.stRadio [role="radiogroup"] > label > div:first-child input[type="radio"]:checked {
+-    accent-color: #FF1493 !important;
+-}
+-
+-/* For legacy radios (fallback) */
+-.stRadio input[type="radio"]:checked {
+-    accent-color: #FF1493 !important;
+-} */
+
+.personality-manager-box {
+  background: rgba(30, 30, 30, 0.92);
+  border: 2.5px solid #FF1493;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px 0 rgba(255,20,147,0.25), 0 1.5px 0 #FF1493 inset;
+  padding: 2.5rem 2rem 2rem 2rem;
+  margin: 2rem auto 2.5rem auto;
+  max-width: 600px;
+  position: relative;
+}
+
+/* Outline style for emoji-only buttons in Personality Manager */
+.stButton button:has(span:only-child:contains('💾')),
+.stButton button:has(span:only-child:contains('🗑️')) {
+    background: transparent !important;
+    color: #fff !important;
+    border: 2px solid #FF1493 !important;
+    box-shadow: none !important;
+    border-radius: 6px !important;
+    transition: background 0.2s;
+}
+.stButton button:has(span:only-child:contains('💾')):hover,
+.stButton button:has(span:only-child:contains('🗑️')):hover {
+    background: #FF1493 !important;
+    color: #fff !important;
 }

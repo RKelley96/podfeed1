@@ -334,7 +334,7 @@ class VoiceSynthesizer:
         """Generate audio from the podcast script with sound effects."""
         try:
             # First generate the main audio
-            main_audio_path = self._generate_main_audio(script, host1_name, host2_name)
+            main_audio_path = self._generate_main_audio(script, host1_name, host2_name, output_path, voice1_id, voice2_id)
             if not main_audio_path:
                 return None
 
@@ -359,7 +359,7 @@ class VoiceSynthesizer:
             logging.error(f"Error in generate_audio: {str(e)}")
             return None
 
-    def _generate_main_audio(self, script, host1_name, host2_name, output_path="output/podcast.mp3"):
+    def _generate_main_audio(self, script, host1_name, host2_name, output_path="output/podcast.mp3", voice1_id=None, voice2_id=None):
         """Generate the main podcast audio without sound effects."""
         try:
             logging.info("Starting audio generation...")
@@ -367,8 +367,6 @@ class VoiceSynthesizer:
             logging.info(f"Hosts: {host1_name} and {host2_name}")
 
             # Set voice IDs with prioritization: parameter > legacy-specific > default
-            # Use the already cleaned voice IDs from __init__
-            # If voice1_id/voice2_id parameters are provided, assume they are clean (or will be cleaned in text_to_speech)
             final_voice1_id = voice1_id if voice1_id else (self.joe_rogan_voice_id if host1_name.lower() == "joe rogan" else self.default_voice_1)
             final_voice2_id = voice2_id if voice2_id else (self.alex_cooper_voice_id if host2_name.lower() == "alex cooper" else self.default_voice_2)
 

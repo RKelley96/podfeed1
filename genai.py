@@ -58,7 +58,7 @@ class GenAI:
     def generate_dynamic_podcast_script(self, topic, host1_data, host2_data, format_type="text", length="short", fight_mode=False, host_leaves=False, qa_mode=False, flirt_mode=False, ad_mode=False):
         """
         Generates a podcast script with dynamic personalities and sound effects.
-        
+
         Parameters:
         ----------
         topic : str
@@ -85,44 +85,14 @@ class GenAI:
         try:
             # Determine length parameters
             length_params = {
+                "super_short": "30 seconds",
                 "short": "3-5 minutes",
                 "medium": "5-10 minutes",
                 "long": "10-15 minutes"
             }
             target_length = length_params.get(length, "3-5 minutes")
 
-            # Add sound effect instructions to system prompt
-            sfx_instructions = """
-            You may include sound effects in the script using square brackets, but use them EXTREMELY SPARINGLY and only for truly dramatic moments. Available sound effects:
-            - [door slam] - ONLY when a host dramatically storms out (max once per episode)
-            - [applause] - ONLY for major breakthroughs or shocking revelations
-            - [laugh] - ONLY for the absolute funniest punchline of the episode
-            - [drum roll] - ONLY before the biggest reveal or announcement
-            - [suspense] - ONLY for major cliffhangers before commercial breaks
-            - [fight] - ONLY for actual physical altercations in fight mode
-            - [exit] - ONLY when a host permanently leaves the show
-            - [mic drop] - ONLY for the absolute final line of the episode
-
-            STRICT Guidelines:
-            1. Use sound effects VERY sparingly - ideally just 1-2 per episode
-            2. Never use more than one sound effect in any 5-minute segment
-            3. Only use sound effects at natural break points in the conversation
-            4. Make sure the dialogue naturally builds up to the sound effect
-            5. Never use sound effects in the first 2 minutes of the episode
-            6. Never use sound effects in the last 30 seconds (except [mic drop])
-            7. Always leave at least 2 minutes between sound effects
-            8. Never use [applause] and [laugh] in the same episode
-            9. Only use [door slam] in fight mode or when a host leaves
-            10. [mic drop] must be the very last thing in the episode
-
-            Example of good usage (sparse and impactful):
-            "After months of investigation, I can finally reveal... [drum roll] The truth about the missing files!"
-
-            Example of bad usage (overused):
-            "That's hilarious! [laugh] Anyway, let me tell you about... [drum roll] The time I... [applause]"
-            """
-
-            # Construct system prompt with personality data
+            # Construct system prompt
             system_prompt = f"""You are a podcast script generator. Create a natural, engaging conversation between two hosts for a podcast episode.
 
 Host 1 ({host1_data['name']}):
@@ -136,13 +106,15 @@ Host 2 ({host2_data['name']}):
 - Common Topics: {', '.join(host2_data['topics'][:5])}
 
 Format the script with the following rules:
-1. Start each line with the speaker's name followed by a colon
-2. No parentheses or additional labels
-3. No sound effects or stage directions
-4. Each speaker's dialogue should be on its own line
-5. Keep responses concise and natural
-6. Create natural back-and-forth dialogue
-7. Maintain distinct personalities throughout
+1. Start with "EPISODE TITLE: [create an engaging, specific title that reflects the topic and promises value to listeners]"
+2. After the title, begin the dialogue with each line starting with the speaker's name followed by a colon
+3. Use exactly these names: "{host1_data['name']}:" and "{host2_data['name']}:"
+4. No parentheses or additional labels
+5. Do not include any sound effects or stage directions
+6. Each speaker's dialogue should be on its own line
+7. Keep responses concise and natural
+8. Create natural back-and-forth dialogue
+9. Maintain distinct personalities throughout
 
 The episode should be approximately {target_length} long.
 
@@ -153,8 +125,6 @@ The episode should be approximately {target_length} long.
 {f'Have {host1_data["name"]} leave the episode dramatically about 2/3 through.' if host_leaves else ''}
 
 The topic is: {topic}
-
-{sfx_instructions}
 """
 
             # Generate the script
@@ -162,13 +132,20 @@ The topic is: {topic}
                 model=self.model_name,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": "Generate the podcast script."}
+                    {"role": "user", "content": f"Generate a podcast script about {topic}. Create a specific, engaging title that reflects the topic and promises value to listeners."}
                 ],
                 temperature=0.7,
                 max_tokens=2000
             )
 
             script = response.choices[0].message.content.strip()
+            
+            # Verify the script format
+            if not any(line.startswith((f"{host1_data['name']}:", f"{host2_data['name']}:")) for line in script.split('\n')):
+                logging.error("Generated script does not contain proper dialogue format")
+                logging.error(f"Script content: {script}")
+                return "Error: Script format invalid - missing dialogue lines"
+            
             logging.info("Script generated successfully")
             return script
 
@@ -176,85 +153,86 @@ The topic is: {topic}
             logging.error(f"Error generating script: {e}", exc_info=True)
             return f"Error generating script: {str(e)}"
 
-    def generate_podcast_script(self, topic, format_type="text", length="medium", fight_mode=False, host_leaves=False, qa_mode=False, flirt_mode=False, ad_mode=False):
+    def generate_podcast_script(self, topic, format_type, length, fight_mode=False, host_leaves=False, qa_mode=False, flirt_mode=False, ad_mode=False):
         """
-        Legacy method for backwards compatibility - uses hardcoded Joe Rogan and Alex Cooper personalities.
-        Passes fight_mode, host_leaves, qa_mode, flirt_mode, and ad_mode flags to the dynamic generator.
-
-        For new dynamic personality support, use generate_dynamic_podcast_script instead.
+        Generates a podcast script using the specified parameters.
+        
+        Parameters:
+        ----------
+        topic : str
+            The topic to discuss
+        format_type : str
+            The format of the input (text, url, or image)
+        length : str
+            The desired length of the podcast (short, medium, or long)
+        fight_mode : bool
+            Whether to generate a high-conflict script
+        host_leaves : bool
+            Whether a host should leave during the episode
+        qa_mode : bool
+            Whether to include audience Q&A in the second half
+        flirt_mode : bool
+            Whether to include subtle romantic tension
+        ad_mode : bool
+            Whether to include a personality-appropriate ad read
         """
-        logging.warning("Using legacy podcast script generation with hardcoded personalities")
-
-        # Import the original personality data
         try:
-            from joealex_data import JOE_ROGAN_PERSONALITY, ALEX_COOPER_PERSONALITY
-
-            # Create host data structures for compatibility with new method
-            joe_data = {
-                "name": "Joe Rogan",
-                "background": JOE_ROGAN_PERSONALITY["background"],
-                "speech_patterns": JOE_ROGAN_PERSONALITY["speech_patterns"],
-                "topics": JOE_ROGAN_PERSONALITY["topics"]
+            # Determine length parameters
+            length_params = {
+                "super_short": "30 seconds",
+                "short": "3-5 minutes",
+                "medium": "5-10 minutes",
+                "long": "10-15 minutes"
             }
+            target_length = length_params.get(length, "3-5 minutes")
 
-            alex_data = {
-                "name": "Alex Cooper",
-                "background": ALEX_COOPER_PERSONALITY["background"],
-                "speech_patterns": ALEX_COOPER_PERSONALITY["speech_patterns"],
-                "topics": ALEX_COOPER_PERSONALITY["topics"]
-            }
+            # Construct system prompt
+            system_prompt = f"""You are a podcast script generator. Create a natural, engaging conversation between Joe Rogan and Alex Cooper for a podcast episode.
 
-            # Call the new dynamic method with the legacy data AND all mode flags
-            return self.generate_dynamic_podcast_script(
-                topic,
-                joe_data,
-                alex_data,
-                format_type,
-                length,
-                fight_mode=fight_mode,
-                host_leaves=host_leaves,
-                qa_mode=qa_mode,
-                flirt_mode=flirt_mode,
-                ad_mode=ad_mode
+Format the script with the following rules:
+1. Start with "EPISODE TITLE: [create an engaging, specific title that reflects the topic and promises value to listeners]"
+2. After the title, begin the dialogue with each line starting with the speaker's name followed by a colon
+3. Use exactly these names: "Joe Rogan:" and "Alex Cooper:"
+4. No parentheses or additional labels
+5. No sound effects or stage directions
+6. Each speaker's dialogue should be on its own line
+7. Keep responses concise and natural
+8. Create natural back-and-forth dialogue
+9. Maintain distinct personalities throughout
+
+The episode should be approximately {target_length} long.
+
+{f'Include a Q&A segment in the second half where the hosts answer 2-3 audience questions related to the topic.' if qa_mode else ''}
+{f'Include subtle romantic tension that builds throughout the episode, with the hosts showing increasing interest in each other.' if flirt_mode else ''}
+{f'Include a natural ad read in the middle of the episode that fits the hosts\' personalities and the topic.' if ad_mode else ''}
+{f'Make the conversation more confrontational with less respect between hosts.' if fight_mode else ''}
+{f'Have Joe Rogan leave the episode dramatically about 2/3 through.' if host_leaves else ''}
+
+The topic is: {topic}
+"""
+
+            # Generate the script
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Generate a podcast script about {topic}. Create a specific, engaging title that reflects the topic and promises value to listeners."}
+                ],
+                temperature=0.7,
+                max_tokens=2000
             )
 
-        except ImportError:
-            # If personality_data.py is removed, use minimal default personalities
-            logging.error("personality_data.py not found, using minimal default personalities")
+            script = response.choices[0].message.content.strip()
+            
+            # Verify the script format
+            if not any(line.startswith(("Joe Rogan:", "Alex Cooper:")) for line in script.split('\n')):
+                logging.error("Generated script does not contain proper dialogue format")
+                logging.error(f"Script content: {script}")
+                return "Error: Script format invalid - missing dialogue lines"
+            
+            logging.info("Script generated successfully")
+            return script
 
-            joe_data = {
-                "name": "Joe Rogan",
-                "background": "Joe Rogan is a comedian, podcast host, and UFC commentator known for his conversational interview style and wide-ranging interests.",
-                "speech_patterns": ["It's entirely possible that", "A hundred percent", "That's crazy, man",
-                                   "Have you ever tried", "What's interesting about that is",
-                                   "I was just talking to someone about this", "The thing is",
-                                   "Here's the deal", "Listen", "I've been saying this for years"],
-                "topics": ["martial arts", "hunting", "comedy", "fitness", "psychedelics",
-                          "wildlife", "technology", "free speech", "comedy", "conspiracy theories"]
-            }
-
-            alex_data = {
-                "name": "Alex Cooper",
-                "background": "Alex Cooper is the host of the popular podcast 'Call Her Daddy' where she discusses relationships, sex, and social dynamics with a focus on female empowerment.",
-                "speech_patterns": ["I'm literally obsessed with", "That's so toxic", "It's giving...",
-                                   "Let me just say", "I'm actually dead", "So here's the situation",
-                                   "That's the energy we need", "It's the vibe for me",
-                                   "Stop, that's insane", "The daddy gang knows"],
-                "topics": ["dating strategies", "female empowerment", "social media", "mental health",
-                          "celebrity gossip", "career development", "friendship", "personal growth",
-                          "dating apps", "relationships"]
-            }
-
-            # Call the dynamic method with the default data AND the fight mode flags
-            return self.generate_dynamic_podcast_script(
-                topic,
-                joe_data,
-                alex_data,
-                format_type,
-                length,
-                fight_mode=fight_mode, # Pass flag
-                host_leaves=host_leaves, # Pass flag
-                qa_mode=qa_mode,
-                flirt_mode=flirt_mode,
-                ad_mode=ad_mode
-            )
+        except Exception as e:
+            logging.error(f"Error generating script: {e}", exc_info=True)
+            return f"Error generating script: {str(e)}"

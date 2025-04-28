@@ -9,119 +9,95 @@ from io import BytesIO
 import base64
 
 class ArtworkGenerator:
-    def __init__(self, openai_api_key=None):
-        """
-        Initializes the ArtworkGenerator class with the provided OpenAI API key.
-        """
-        if not openai_api_key:
-            raise ValueError("OpenAI API key is required")
+    def __init__(self, openai_api_key):
+        """Initialize the artwork generator with OpenAI API key."""
+        self.client = openai.OpenAI(api_key=openai_api_key)
 
-        self.client = OpenAI(api_key=openai_api_key)
-        logging.info("ArtworkGenerator initialized successfully")
-
-    def _encode_image(self, image_file):
-        """Helper function to encode an image file to base64."""
-        if not image_file:
-            return None
-        try:
-            image_bytes = image_file.getvalue()
-            return base64.b64encode(image_bytes).decode('utf-8')
-        except Exception as e:
-            logging.error(f"Error encoding image: {e}")
-            return None
-
-    def generate_artwork(self, title, topic, output_path="output/episode_artwork.png", host1_photo=None, host2_photo=None):
+    def generate_artwork(self, title, topic, host1_name=None, host2_name=None, style="Realistic", mood="Professional", color_scheme="Vibrant", host1_photo_path=None, host2_photo_path=None, output_path="output/episode_artwork.png"):
         """
-        Generates artwork for a podcast episode using DALL-E.
+        Generate artwork for a podcast episode using DALL-E.
         
-        Parameters:
-        ----------
-        title : str
-            The episode title
-        topic : str
-            The episode topic
-        output_path : str
-            Path to save the generated artwork
-        host1_photo : UploadedFile
-            Photo of the first host
-        host2_photo : UploadedFile
-            Photo of the second host
+        Args:
+            title (str): The episode title
+            topic (str): The episode topic/content
+            host1_name (str): Name of the first host
+            host2_name (str): Name of the second host
+            style (str): Art style (Realistic, Cartoon, Abstract, Minimalist, Vintage)
+            mood (str): Mood of the artwork (Energetic, Serious, Playful, Mysterious, Professional)
+            color_scheme (str): Color scheme (Vibrant, Pastel, Monochrome, Warm, Cool)
+            host1_photo_path (str): Path to first host's photo
+            host2_photo_path (str): Path to second host's photo
+            output_path (str): Path to save the generated artwork
             
         Returns:
-        -------
-        str
-            Path to the generated artwork file, or an error message string
+            str: Path to the generated artwork or error message
         """
         try:
-            # Create a descriptive prompt for the artwork
-            prompt = f"Create a podcast cover art for an episode titled '{title}' about {topic}. "
+            # Create a detailed prompt for DALL-E
+            prompt = f"Create a professional podcast cover art for an episode titled '{title}' about {topic}. "
             
-            # Add host photo references to the prompt if available
-            if host1_photo or host2_photo:
-                prompt += "The artwork should incorporate the visual style and appearance of the hosts. "
-                if host1_photo:
-                    prompt += "Use the first host's photo as a reference for their appearance. "
-                if host2_photo:
-                    prompt += "Use the second host's photo as a reference for their appearance. "
+            # Add host information if available
+            if host1_name and host2_name:
+                prompt += f"The episode features hosts {host1_name} and {host2_name}. "
             
-            prompt += "The artwork should be professional, modern, and eye-catching. " \
-                    "Use a 1:1 aspect ratio. " \
-                    "Include elements that represent the topic while maintaining a clean, podcast-appropriate design. " \
-                    "Avoid text or logos in the image itself."
-
-            logging.info(f"Generating artwork with prompt: {prompt}")
-
-            # Prepare the image generation request
-            request_data = {
-                "model": "dall-e-3",
-                "prompt": prompt,
-                "size": "1024x1024",
-                "quality": "standard",
-                "n": 1,
-            }
-
-            # If host photos are provided, add them as reference images
-            if host1_photo or host2_photo:
-                request_data["reference_images"] = []
-                if host1_photo:
-                    encoded_photo1 = self._encode_image(host1_photo)
-                    if encoded_photo1:
-                        request_data["reference_images"].append(encoded_photo1)
-                if host2_photo:
-                    encoded_photo2 = self._encode_image(host2_photo)
-                    if encoded_photo2:
-                        request_data["reference_images"].append(encoded_photo2)
-
-            # Generate the image using DALL-E
-            response = self.client.images.generate(**request_data)
-
-            # Get the image URL from the response
+            # Add style description
+            if style == "Realistic":
+                prompt += "The artwork should be photorealistic and professional. "
+            elif style == "Cartoon":
+                prompt += "The artwork should be in a modern cartoon style, playful yet professional. "
+            elif style == "Abstract":
+                prompt += "The artwork should be abstract and artistic, using shapes and colors to represent the hosts. "
+            elif style == "Minimalist":
+                prompt += "The artwork should be minimalist and clean, using simple shapes and limited colors. "
+            elif style == "Vintage":
+                prompt += "The artwork should have a vintage, retro style with classic design elements. "
+            
+            # Add mood description
+            prompt += f"The overall mood should be {mood.lower()}. "
+            
+            # Add color scheme
+            prompt += f"Use a {color_scheme.lower()} color scheme. "
+            
+            # Add host photo references if available
+            if host1_photo_path and os.path.exists(host1_photo_path):
+                prompt += f"Reference the appearance of {host1_name} from their photo. "
+            if host2_photo_path and os.path.exists(host2_photo_path):
+                prompt += f"Reference the appearance of {host2_name} from their photo. "
+            
+            # Final requirements
+            prompt += "The artwork should be suitable for a podcast cover, use a 1:1 aspect ratio, and be visually appealing. Do not include any text or logos in the image."
+            
+            # Generate the image
+            response = self.client.images.generate(
+                model="dall-e-3",
+                prompt=prompt,
+                size="1024x1024",
+                quality="standard",
+                n=1
+            )
+            
+            # Get the image URL
             image_url = response.data[0].url
-
-            # Download the image
+            
+            # Download and save the image
             response = requests.get(image_url)
-            if response.status_code != 200:
-                return f"Error: Failed to download image from URL. Status code: {response.status_code}"
-
-            # Create output directory if it doesn't exist
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-
-            # Save the image
-            with open(output_path, 'wb') as f:
-                f.write(response.content)
-
-            logging.info(f"Artwork generated successfully and saved to {output_path}")
-            return output_path
-
+            if response.status_code == 200:
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                with open(output_path, 'wb') as f:
+                    f.write(response.content)
+                return output_path
+            else:
+                return f"Error: Failed to download image (status code: {response.status_code})"
+                
         except openai.APIError as e:
-            logging.error(f"OpenAI API returned an API Error: {e}", exc_info=True)
-            return f"Error: OpenAI API returned an API Error: {e}"
+            logging.error(f"OpenAI API error: {e}")
+            return f"Error: OpenAI API error - {str(e)}"
         except openai.APIConnectionError as e:
-            logging.error(f"Failed to connect to OpenAI API: {e}", exc_info=True)
-            return f"Error: Failed to connect to OpenAI API: {e}"
+            logging.error(f"OpenAI connection error: {e}")
+            return f"Error: Failed to connect to OpenAI - {str(e)}"
         except openai.RateLimitError as e:
-            logging.error(f"OpenAI API request exceeded rate limit: {e}", exc_info=True)
-            return f"Error: OpenAI API request exceeded rate limit: {e}"
+            logging.error(f"OpenAI rate limit error: {e}")
+            return f"Error: Rate limit exceeded - {str(e)}"
         except Exception as e:
-            logging.error(f"Error generating artwork: {e}", exc_info=True)
-            return f"Error generating artwork: {str(e)}" 
+            logging.error(f"Unexpected error in artwork generation: {e}")
+            return f"Error: Unexpected error - {str(e)}" 

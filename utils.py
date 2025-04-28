@@ -7,6 +7,8 @@ import io
 import base64
 from openai import OpenAI, APIError, APIConnectionError, RateLimitError, BadRequestError # Import specific errors, including BadRequestError
 import logging # Import logging
+from youtube_transcript_api import YouTubeTranscriptApi
+from urllib.parse import urlparse, parse_qs
 
 # Load environment variables
 load_dotenv()
@@ -23,11 +25,71 @@ logging.info(f"Utils using cleaned vision model name: '{OPENAI_VISION_MODEL}'")
 # --- End cleaning ---
 
 
+def extract_youtube_id(url):
+    """Extract YouTube video ID from various URL formats."""
+    # Handle different YouTube URL formats
+    if 'youtu.be' in url:
+        return url.split('/')[-1].split('?')[0]
+    elif 'youtube.com' in url:
+        parsed_url = urlparse(url)
+        if parsed_url.path == '/watch':
+            return parse_qs(parsed_url.query).get('v', [''])[0]
+        elif parsed_url.path.startswith('/embed/'):
+            return parsed_url.path.split('/')[-1]
+    return None
+
 def extract_text_from_url(url):
     """
     Fetches and extracts text content from a URL.
     Handles potential request errors more specifically.
     """
+    # Check if it's a YouTube URL
+    youtube_id = extract_youtube_id(url)
+    if youtube_id:
+        try:
+            # Get the entire transcript
+            transcript_list = YouTubeTranscriptApi.get_transcript(youtube_id)
+            
+            transcript_segment = []
+            speakers = set()  # Track unique speakers
+            current_speaker = None
+            
+            for entry in transcript_list:
+                text = entry['text']
+                # Look for common speaker indicators (e.g., "Speaker 1:", "John:", etc.)
+                if ':' in text:
+                    speaker = text.split(':')[0].strip()
+                    if len(speaker) < 50:
+                        speakers.add(speaker)
+                        current_speaker = speaker
+                        transcript_segment.append(f"\n[{speaker}]:{text.split(':',1)[1].strip()}")
+                    else:
+                        transcript_segment.append(text)
+                else:
+                    if current_speaker:
+                        transcript_segment.append(f"\n[{current_speaker}]: {text}")
+                    else:
+                        transcript_segment.append(text)
+            
+            if not transcript_segment:
+                return "Error: No transcript available for this YouTube video."
+            
+            # If no speakers were detected, assign default speaker numbers
+            if not speakers:
+                speakers = [f"Speaker {i}" for i in range(1, 4)]  # Default to 3 speakers
+            
+            transcript_text = " ".join(transcript_segment)
+            return {
+                "transcript": transcript_text,
+                "speakers": list(speakers),
+                "type": "youtube"
+            }
+            
+        except Exception as e:
+            logging.error(f"Error fetching YouTube transcript: {str(e)}", exc_info=True)
+            return f"Error: Could not fetch YouTube transcript: {str(e)}"
+
+    # Original URL extraction code for non-YouTube URLs
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
